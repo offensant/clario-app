@@ -16,8 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().min(1, "Type anything"),
+  password: z.string().min(1, "Type anything"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;

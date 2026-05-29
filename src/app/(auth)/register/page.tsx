@@ -61,7 +61,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="mt-6 w-full bg-card border border-border rounded-2xl shadow-card p-8">
-        <form onSubmit={(e) => { e.preventDefault(); router.push('/dashboard'); }} className="space-y-4">
+        <form noValidate onSubmit={(e) => { e.preventDefault(); router.push('/dashboard'); }} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full name</Label>
             <Input

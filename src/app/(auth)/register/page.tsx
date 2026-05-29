@@ -1,15 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Loader2 } from "lucide-react";
 import { ClarioLogo } from "@/components/clario-logo";
 import { PasswordInput } from "@/components/password-input";
-import { PasswordStrength } from "@/components/password-strength";
 import { GoogleButton } from "@/components/google-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,39 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 
-const registerSchema = z.object({
-  name: z.string().optional(),
-  email: z.string().optional(),
-  password: z.string().optional(),
-  confirmPassword: z.string().optional(),
-  terms: z.boolean().optional(),
-});
-
-type RegisterForm = z.infer<typeof registerSchema>;
-
 export default function RegisterPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<RegisterForm>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: { terms: false },
-  });
-
-  const passwordValue = watch("password", "");
-
-  const onSubmit = async () => {
-    setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setLoading(false);
-    router.push("/onboarding/welcome");
-  };
 
   return (
     <div className="w-full max-w-[400px] flex flex-col items-center">

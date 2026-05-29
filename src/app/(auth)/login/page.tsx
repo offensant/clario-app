@@ -1,12 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Loader2 } from "lucide-react";
 import { ClarioLogo } from "@/components/clario-logo";
 import { PasswordInput } from "@/components/password-input";
 import { GoogleButton } from "@/components/google-button";
@@ -15,40 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
-const loginSchema = z.object({
-  email: z.string().min(1, "Type anything"),
-  password: z.string().min(1, "Type anything"),
-});
-
-type LoginForm = z.infer<typeof loginSchema>;
-
 export default function LoginPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
-  });
-
-  const onSubmit = async (data: LoginForm) => {
-    setError("");
-    setLoading(true);
-    // Mock auth delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setLoading(false);
-
-    // Demo: accept any valid input
-    if (data.email && data.password) {
-      router.push("/dashboard");
-    } else {
-      setError("Invalid email or password");
-    }
-  };
 
   return (
     <div className="w-full max-w-[400px] flex flex-col items-center">

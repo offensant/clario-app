@@ -60,7 +60,7 @@ export default function LoginPage() {
       </div>
 
       <div className="mt-6 w-full bg-card border border-border rounded-2xl shadow-card p-8">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); router.push('/dashboard'); }} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -68,11 +68,7 @@ export default function LoginPage() {
               type="email"
               placeholder="you@example.com"
               className="h-11 rounded-[10px]"
-              {...register("email")}
             />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -89,26 +85,14 @@ export default function LoginPage() {
               id="password"
               placeholder="••••••••"
               className="h-11 rounded-[10px]"
-              error={!!errors.password}
-              {...register("password")}
             />
-            {errors.password && (
-              <p className="text-xs text-destructive">{errors.password.message}</p>
-            )}
           </div>
-
-          {error && (
-            <p className="text-sm text-destructive text-center animate-in fade-in duration-200">
-              {error}
-            </p>
-          )}
 
           <Button
             type="submit"
             className="w-full h-11 rounded-[10px] bg-primary hover:bg-[#EA6C00] text-white font-medium"
-            disabled={loading}
           >
-            {loading ? <Loader2 size={18} className="animate-spin" /> : "Sign in"}
+            Sign in
           </Button>
         </form>
 

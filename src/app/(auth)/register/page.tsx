@@ -61,16 +61,14 @@ export default function RegisterPage() {
       </div>
 
       <div className="mt-6 w-full bg-card border border-border rounded-2xl shadow-card p-8">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); router.push('/dashboard'); }} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full name</Label>
             <Input
               id="name"
               placeholder="Thomas Mercier"
               className="h-11 rounded-[10px]"
-              {...register("name")}
             />
-            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -80,9 +78,7 @@ export default function RegisterPage() {
               type="email"
               placeholder="you@example.com"
               className="h-11 rounded-[10px]"
-              {...register("email")}
             />
-            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -91,11 +87,7 @@ export default function RegisterPage() {
               id="password"
               placeholder="••••••••"
               className="h-11 rounded-[10px]"
-              error={!!errors.password}
-              {...register("password")}
             />
-            <PasswordStrength password={passwordValue} />
-            {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -104,19 +96,11 @@ export default function RegisterPage() {
               id="confirmPassword"
               placeholder="••••••••"
               className="h-11 rounded-[10px]"
-              error={!!errors.confirmPassword}
-              {...register("confirmPassword")}
             />
-            {errors.confirmPassword && (
-              <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
-            )}
           </div>
 
           <div className="flex items-start gap-3 pt-1">
-            <Checkbox
-              id="terms"
-              onCheckedChange={(checked) => setValue("terms", checked === true)}
-            />
+            <Checkbox id="terms" />
             <label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
               I agree to the{" "}
               <span className="text-foreground hover:text-primary transition-colors">Terms of Service</span>
@@ -124,14 +108,12 @@ export default function RegisterPage() {
               <span className="text-foreground hover:text-primary transition-colors">Privacy Policy</span>
             </label>
           </div>
-          {errors.terms && <p className="text-xs text-destructive">{errors.terms.message}</p>}
 
           <Button
             type="submit"
             className="w-full h-11 rounded-[10px] bg-primary hover:bg-[#EA6C00] text-white font-medium"
-            disabled={loading}
           >
-            {loading ? <Loader2 size={18} className="animate-spin" /> : "Create account"}
+            Create account
           </Button>
         </form>
 

@@ -13,7 +13,7 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
   const [lang, setLang] = useState<"EN" | "FR">("EN");
 
   return (
-    <header className="fixed top-0 right-0 left-0 lg:left-60 z-30 h-14 bg-background/80 backdrop-blur-sm border-b border-border">
+    <header className="fixed top-0 right-0 left-0 lg:left-60 z-30 h-14 glass-topbar">
       <div className="h-full px-4 lg:px-6 flex items-center justify-between">
         {/* Left */}
         <div className="flex items-center gap-3">

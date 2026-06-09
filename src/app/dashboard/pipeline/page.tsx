@@ -1,204 +1,108 @@
 "use client";
 
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { Plus, MoreHorizontal, Phone, Mail, Calendar } from "lucide-react";
-import { useState } from "react";
-
-type Prospect = {
-  id: string;
-  name: string;
-  company: string;
-  value: string;
-  lastContact: string;
-};
-
-const initialColumns: Record<string, { label: string; color: string; prospects: Prospect[] }> = {
-  high: {
-    label: "High Probability",
-    color: "#22C55E",
-    prospects: [
-      { id: "1", name: "Sarah Chen", company: "TechFlow", value: "$12,400", lastContact: "2 days ago" },
-      { id: "2", name: "Marc Dupont", company: "DataPulse", value: "$8,200", lastContact: "1 day ago" },
-    ],
-  },
-  risk: {
-    label: "At Risk",
-    color: "#EF4444",
-    prospects: [
-      { id: "3", name: "James Wilson", company: "WidgetLab", value: "$15,600", lastContact: "12 days ago" },
-    ],
-  },
-  value: {
-    label: "High Value",
-    color: "#F97316",
-    prospects: [
-      { id: "4", name: "Ana Rodriguez", company: "ScaleUp Inc", value: "$24,000", lastContact: "5 days ago" },
-      { id: "5", name: "Tom Baker", company: "GrowthCo", value: "$18,500", lastContact: "3 days ago" },
-    ],
-  },
-  stagnant: {
-    label: "Stagnant",
-    color: "#6B7280",
-    prospects: [
-      { id: "6", name: "Lisa Park", company: "NovaTech", value: "$6,800", lastContact: "21 days ago" },
-    ],
-  },
-};
-
-function MiniChart() {
-  const data = [20, 35, 28, 45, 40, 55, 50, 65, 60, 72];
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-  const w = 280;
-  const h = 80;
-  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`).join(" ");
-  return (
-    <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="mt-2">
-      <polyline points={pts} fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Plus, MoreHorizontal } from "lucide-react";
+import { LineChart, Line, ResponsiveContainer } from "recharts";
+import { supabase } from "@/lib/supabase";
+import { useWorkspace } from "@/context/WorkspaceContext";
+import { motion } from "framer-motion";
 
 export default function PipelinePage() {
-  const [columns, setColumns] = useState(initialColumns);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newCompany, setNewCompany] = useState("");
-  const [newValue, setNewValue] = useState("");
+  const router = useRouter();
+  const { workspace, businessType } = useWorkspace();
+  const [contacts, setContacts] = useState<any[]>([]);
 
-  const handleAdd = () => {
-    if (!newName.trim()) return;
-    const updated = { ...columns };
-    updated.high.prospects.push({
-      id: Date.now().toString(),
-      name: newName,
-      company: newCompany,
-      value: newValue || "$0",
-      lastContact: "Just now",
-    });
-    setColumns(updated);
-    setShowAddModal(false);
-    setNewName("");
-    setNewCompany("");
-    setNewValue("");
-  };
+  useEffect(() => {
+    if (businessType === "ecommerce") {
+      router.push("/dashboard/acquisition");
+      return;
+    }
 
-  const handleDelete = (colKey: string, id: string) => {
-    const updated = { ...columns };
-    updated[colKey].prospects = updated[colKey].prospects.filter((p) => p.id !== id);
-    setColumns(updated);
-  };
+    const fetchContacts = async () => {
+      if (!workspace) return;
+      const { data } = await supabase.from("pipeline_contacts").select("*").eq("workspace_id", workspace.id);
+      if (data && data.length > 0) setContacts(data);
+      else {
+        setContacts([
+          { id: "1", company_name: "Acme Corp", contact_name: "John Doe", deal_value: 12000, close_probability: 80, stage: "high_probability", last_contact_date: "2024-05-20" },
+          { id: "2", company_name: "Globex", contact_name: "Jane Smith", deal_value: 45000, close_probability: 60, stage: "high_value", last_contact_date: "2024-05-18" },
+          { id: "3", company_name: "Initech", contact_name: "Bill L.", deal_value: 8000, close_probability: 20, stage: "at_risk", last_contact_date: "2024-04-10" }
+        ]);
+      }
+    };
+    fetchContacts();
+  }, [businessType, router, workspace]);
+
+  const stages = [
+    { id: "high_probability", title: "High Probability", color: "#22C55E" },
+    { id: "high_value", title: "High Value", color: "#3B82F6" },
+    { id: "at_risk", title: "At Risk", color: "#EF4444" },
+    { id: "stagnant", title: "Stagnant", color: "#6B7280" }
+  ];
 
   return (
-    <DashboardLayout title="Pipeline">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-foreground">Pipeline</h2>
-            <p className="text-muted-foreground mt-1">Track and manage your prospects.</p>
-          </div>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-[#EA6C00] text-white text-sm font-medium rounded-xl transition-colors"
-          >
-            <Plus size={16} />
-            Add prospect
-          </button>
-        </div>
-
-        {/* Pipeline Evolution Chart */}
-        <div className="glass-card p-6">
-          <p className="text-sm font-semibold text-foreground mb-2">Pipeline Evolution</p>
-          <MiniChart />
-        </div>
-
-        {/* Kanban */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          {Object.entries(columns).map(([key, col]) => (
-            <div key={key} className="space-y-3">
-              <div className="flex items-center gap-2 px-1">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: col.color }} />
-                <span className="text-sm font-semibold text-foreground">{col.label}</span>
-                <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{col.prospects.length}</span>
-              </div>
-
-              <div className="space-y-2">
-                {col.prospects.map((p) => (
-                  <div
-                    key={p.id}
-                    className="glass-card p-4 hover:border-l-2 hover:border-l-primary transition-all cursor-pointer"
-                    style={{ borderRadius: "14px" }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{p.name}</p>
-                        <p className="text-xs text-muted-foreground">{p.company}</p>
-                      </div>
-                      <button
-                        onClick={() => handleDelete(key, p.id)}
-                        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors"
-                      >
-                        <MoreHorizontal size={14} className="text-muted-foreground" />
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between mt-3">
-                      <span className="text-sm font-bold text-primary">{p.value}</span>
-                      <span className="text-xs text-muted-foreground">{p.lastContact}</span>
-                    </div>
-                    <div className="flex gap-1.5 mt-3">
-                      <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-accent transition-colors">
-                        <Phone size={12} className="text-muted-foreground" />
-                      </button>
-                      <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-accent transition-colors">
-                        <Mail size={12} className="text-muted-foreground" />
-                      </button>
-                      <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-accent transition-colors">
-                        <Calendar size={12} className="text-muted-foreground" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Add card */}
-                <button
-                  onClick={() => setShowAddModal(true)}
-                  className="w-full py-3 border-2 border-dashed border-border rounded-xl text-sm text-muted-foreground hover:border-primary/30 hover:text-primary transition-colors"
-                >
-                  + Add
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Add modal */}
-        {showAddModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowAddModal(false)}>
-            <div className="glass-card p-8 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-              <h3 className="text-lg font-semibold text-foreground mb-6">Add prospect</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1.5">Name</label>
-                  <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Full name" className="w-full h-11 px-4 rounded-xl bg-background border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1.5">Company</label>
-                  <input value={newCompany} onChange={(e) => setNewCompany(e.target.value)} placeholder="Company name" className="w-full h-11 px-4 rounded-xl bg-background border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1.5">Estimated value</label>
-                  <input value={newValue} onChange={(e) => setNewValue(e.target.value)} placeholder="$10,000" className="w-full h-11 px-4 rounded-xl bg-background border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                </div>
-              </div>
-              <div className="flex gap-3 mt-6">
-                <button onClick={() => setShowAddModal(false)} className="flex-1 h-11 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-accent transition-colors">Cancel</button>
-                <button onClick={handleAdd} className="flex-1 h-11 rounded-xl bg-primary hover:bg-[#EA6C00] text-white text-sm font-medium transition-colors">Add prospect</button>
-              </div>
-            </div>
-          </div>
-        )}
+    <div className="max-w-7xl mx-auto h-[calc(100vh-120px)] flex flex-col">
+      <div className="flex justify-between items-center mb-6 shrink-0">
+        <h1 className="text-2xl font-semibold text-[#0A0A0A] dark:text-white">Pipeline</h1>
+        <button className="h-9 px-4 rounded-xl border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.03)] font-medium flex items-center gap-2 transition-colors">
+          <Plus size={16} /> Add prospect
+        </button>
       </div>
-    </DashboardLayout>
+
+      <div className="glass-card p-6 mb-8 shrink-0 h-48">
+        <h3 className="text-sm font-semibold text-[#0A0A0A] dark:text-white mb-4">Pipeline Evolution (30d)</h3>
+        <div className="h-24 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={Array.from({length:30}).map((_,i)=>({val: Math.random()*100}))}>
+              <Line type="monotone" dataKey="val" stroke="#F97316" strokeWidth={2} dot={false} fill="rgba(249,115,22,0.06)" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="flex gap-4 flex-1 overflow-x-auto pb-4">
+        {stages.map((stage) => (
+          <div key={stage.id} className="flex-1 min-w-[280px] flex flex-col">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: stage.color }} />
+              <h3 className="text-sm font-semibold text-[#6B7280]">{stage.title}</h3>
+              <span className="ml-auto text-xs font-semibold bg-[#F3F4F6] dark:bg-[rgba(255,255,255,0.08)] px-2 py-0.5 rounded-full text-[#6B7280]">
+                {contacts.filter(c => c.stage === stage.id).length}
+              </span>
+            </div>
+            
+            <div className="space-y-3 flex-1 overflow-y-auto">
+              {contacts.filter(c => c.stage === stage.id).map((contact, i) => (
+                <motion.div
+                  key={contact.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="glass-card p-4 hover:border-l-2 hover:border-l-[#F97316] transition-all cursor-pointer group relative"
+                >
+                  <button className="absolute top-4 right-4 text-[#6B7280] opacity-0 group-hover:opacity-100 transition-opacity">
+                    <MoreHorizontal size={16} />
+                  </button>
+                  <h4 className="font-semibold text-[#0A0A0A] dark:text-white mb-1">{contact.company_name}</h4>
+                  <p className="text-sm text-[#6B7280] mb-3">{contact.contact_name}</p>
+                  <div className="flex items-center justify-between mt-auto">
+                    <span className="font-semibold text-[#374151] dark:text-[#D1D5DB]">${contact.deal_value.toLocaleString()}</span>
+                    <span className="text-xs font-medium bg-[#F3F4F6] dark:bg-[rgba(255,255,255,0.08)] px-2 py-1 rounded-md text-[#6B7280]">
+                      {contact.close_probability}%
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+              {contacts.filter(c => c.stage === stage.id).length === 0 && (
+                <div className="h-24 border-2 border-dashed border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)] rounded-xl flex items-center justify-center">
+                  <span className="text-sm text-[#9CA3AF]">Empty</span>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

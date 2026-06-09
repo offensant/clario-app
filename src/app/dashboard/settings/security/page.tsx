@@ -1,96 +1,109 @@
 "use client";
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import Link from "next/link";
-import { ChevronLeft, Shield, Monitor, Smartphone } from "lucide-react";
-import { useState } from "react";
 
-export default function SecurityPage() {
-  const [showSuccess, setShowSuccess] = useState(false);
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+
+export default function SecuritySettings() {
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const getStrength = () => {
+    if (!password) return 0;
+    if (password.length < 6) return 1;
+    if (password.length < 8) return 2;
+    return 3;
+  };
+  const strength = getStrength();
+
+  const handleUpdate = async () => {
+    if (password !== confirm || strength < 3) return;
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) setMsg(error.message);
+    else {
+      setMsg("Password updated successfully.");
+      setPassword("");
+      setConfirm("");
+    }
+    setLoading(false);
+  };
 
   return (
-    <DashboardLayout title="Security">
-      <div className="max-w-2xl space-y-6">
-        <Link href="/dashboard/settings" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ChevronLeft size={16} /> Settings
-        </Link>
-        <div>
-          <h2 className="text-2xl font-semibold text-foreground">Security</h2>
-          <p className="text-muted-foreground mt-1">Keep your account secure.</p>
-        </div>
+    <div className="max-w-3xl mx-auto">
+      <Link href="/dashboard/settings" className="flex items-center gap-2 text-[#6B7280] hover:text-[#0A0A0A] dark:hover:text-white transition-colors mb-6 w-fit">
+        <ChevronLeft size={16} /> Settings
+      </Link>
 
-        {/* Password */}
+      <h1 className="text-2xl font-semibold text-[#0A0A0A] dark:text-white mb-8">Security</h1>
+
+      <div className="space-y-6">
         <div className="glass-card p-6">
-          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-4">Password</p>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-foreground block mb-1.5">Current password</label>
-              <input type="password" placeholder="••••••••" className="w-full h-11 px-4 rounded-xl bg-background border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+          <h3 className="text-sm font-semibold text-[#0A0A0A] dark:text-white mb-4">Change Password</h3>
+          <div className="space-y-4 mb-6">
+            <input
+              type="password"
+              placeholder="New password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="glass-input"
+            />
+            <div className="flex gap-1 h-1">
+              {[1, 2, 3].map((level) => (
+                <div
+                  key={level}
+                  className={`flex-1 rounded-full ${
+                    strength >= level
+                      ? level === 1 ? "bg-[#EF4444]" : level === 2 ? "bg-[#F97316]" : "bg-[#22C55E]"
+                      : "bg-[rgba(0,0,0,0.06)] dark:bg-[rgba(255,255,255,0.06)]"
+                  }`}
+                />
+              ))}
             </div>
-            <div>
-              <label className="text-sm font-medium text-foreground block mb-1.5">New password</label>
-              <input type="password" placeholder="••••••••" className="w-full h-11 px-4 rounded-xl bg-background border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-              <div className="flex gap-1 mt-2">
-                <div className="flex-1 h-1 rounded-full bg-[#22C55E]" />
-                <div className="flex-1 h-1 rounded-full bg-[#22C55E]" />
-                <div className="flex-1 h-1 rounded-full bg-muted" />
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-1">Medium strength</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground block mb-1.5">Confirm new password</label>
-              <input type="password" placeholder="••••••••" className="w-full h-11 px-4 rounded-xl bg-background border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-            </div>
+            <input
+              type="password"
+              placeholder="Confirm new password"
+              value={confirm}
+              onChange={e => setConfirm(e.target.value)}
+              className="glass-input"
+            />
           </div>
           <button
-            onClick={() => { setShowSuccess(true); setTimeout(() => setShowSuccess(false), 3000); }}
-            className="w-full h-11 mt-6 rounded-xl bg-primary hover:bg-[#EA6C00] text-white text-sm font-medium transition-colors"
+            onClick={handleUpdate}
+            disabled={!password || password !== confirm || strength < 3 || loading}
+            className="h-10 px-6 rounded-xl bg-[#F97316] hover:bg-[#EA6C00] text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Update password
+            {loading ? "Updating..." : "Update password"}
           </button>
-          {showSuccess && (
-            <p className="text-sm text-[#22C55E] text-center mt-3 animate-in fade-in">✓ Password updated successfully</p>
-          )}
+          {msg && <p className="mt-4 text-sm text-[#22C55E]">{msg}</p>}
         </div>
 
-        {/* 2FA */}
-        <div className="glass-card p-6">
-          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-4">Two-Factor Authentication</p>
-          <div className="flex items-center gap-4">
-            <Shield size={20} className="text-primary shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-foreground">Two-Factor Authentication</p>
-              <p className="text-xs text-muted-foreground">Add an extra layer of security</p>
-            </div>
-            <div className="w-10 h-6 rounded-full bg-muted relative cursor-pointer">
-              <div className="absolute left-1 top-1 w-4 h-4 rounded-full bg-muted-foreground transition-transform" />
-            </div>
+        <div className="glass-card p-6 flex justify-between items-center">
+          <div>
+            <h3 className="text-sm font-semibold text-[#0A0A0A] dark:text-white mb-1">Two-Factor Authentication</h3>
+            <p className="text-[13px] text-[#6B7280]">Add an extra layer of security to your account.</p>
           </div>
+          <button className="h-9 px-4 rounded-lg bg-[rgba(0,0,0,0.04)] dark:bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(0,0,0,0.08)] dark:hover:bg-[rgba(255,255,255,0.08)] text-[13px] font-medium transition-colors">
+            Enable 2FA
+          </button>
         </div>
 
-        {/* Sessions */}
         <div className="glass-card overflow-hidden">
-          <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Active Sessions</p>
-            <button className="text-xs text-destructive font-medium">Revoke all sessions</button>
+          <div className="p-4 border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
+            <h3 className="text-sm font-semibold text-[#0A0A0A] dark:text-white">Active Sessions</h3>
           </div>
-          {[
-            { device: "MacBook Pro", browser: "Chrome 124 · 192.168.1.***", time: "Now", current: true, icon: Monitor },
-            { device: "iPhone 15 Pro", browser: "Safari · 10.0.0.***", time: "2 hours ago", current: false, icon: Smartphone },
-          ].map((s, i, arr) => (
-            <div key={s.device} className={`flex items-center gap-4 px-5 py-3.5 ${i < arr.length - 1 ? "border-b border-border/50" : ""}`}>
-              <s.icon size={18} className="text-muted-foreground shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-foreground">{s.device}</p>
-                  {s.current && <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Current</span>}
-                </div>
-                <p className="text-xs text-muted-foreground">{s.browser} · {s.time}</p>
-              </div>
-              {!s.current && <button className="text-xs text-destructive font-medium">Revoke</button>}
+          <div className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-[#0A0A0A] dark:text-white mb-0.5">Windows • Chrome</p>
+              <p className="text-xs text-[#6B7280]">Current session • Paris, France</p>
             </div>
-          ))}
+            <span className="text-xs font-semibold text-[#22C55E] bg-[#22C55E]/10 px-2 py-1 rounded-md">Active</span>
+          </div>
         </div>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

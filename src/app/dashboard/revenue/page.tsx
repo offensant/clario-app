@@ -1,121 +1,138 @@
 "use client";
 
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { Download } from "lucide-react";
+import { LineChart, Line, ResponsiveContainer } from "recharts";
+import { useWorkspace } from "@/context/WorkspaceContext";
+import { useMetrics } from "@/hooks/useMetrics";
 import { useState } from "react";
-
-const chartData7d = [8200, 9100, 8800, 9500, 10200, 9800, 10800];
-const chartData30d = [6000, 6500, 7200, 7800, 8200, 8500, 8800, 9000, 9200, 9100, 9500, 9800, 10200, 10500, 10200, 9800, 10000, 10400, 10800, 11200, 11000, 10800, 11200, 11500, 11800, 12000, 12200, 12100, 12400, 12800];
-const chartData90d = [4000, 4500, 5000, 5200, 5800, 6200, 6500, 7000, 7200, 7800, 8000, 8200, 8500, 8800, 9000, 9200, 9500, 9800, 10000, 10200, 10500, 10800, 11000, 11200, 11500, 11800, 12000, 12200, 12400, 12800];
-
-function RevenueChart({ data }: { data: number[] }) {
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-  const w = 600;
-  const h = 160;
-  const actualPts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`).join(" ");
-
-  const projected = data.slice(-5).map((v, i) => v + (i + 1) * 200);
-  const projStart = ((data.length - 1) / (data.length - 1)) * w;
-  const projPts = projected.map((v, i) => `${projStart + ((i + 1) / projected.length) * 100},${h - ((v - min) / range) * h}`).join(" ");
-  const lastActualPt = `${projStart},${h - ((data[data.length - 1] - min) / range) * h}`;
-
-  return (
-    <svg width="100%" height={h} viewBox={`0 0 ${w + 100} ${h}`} preserveAspectRatio="none">
-      {/* Fill */}
-      <polygon
-        points={`0,${h} ${actualPts} ${projStart},${h}`}
-        fill="rgba(249,115,22,0.06)"
-      />
-      {/* Actual line */}
-      <polyline points={actualPts} fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      {/* Projected line */}
-      <polyline points={`${lastActualPt} ${projPts}`} fill="none" stroke="#F97316" strokeWidth="2" strokeDasharray="6 4" strokeLinecap="round" />
-    </svg>
-  );
-}
+import html2canvas from "html2canvas";
 
 export default function RevenuePage() {
-  const [period, setPeriod] = useState<"7d" | "30d" | "90d">("30d");
+  const { businessType, businessProfile } = useWorkspace();
+  const { metrics } = useMetrics(null); // Just using mock data here for display
+  const [showPL, setShowPL] = useState(false);
 
-  const chartMap = { "7d": chartData7d, "30d": chartData30d, "90d": chartData90d };
-  const currentData = chartMap[period];
-  const currentRevenue = currentData[currentData.length - 1];
-  const previousRevenue = currentData[0];
-  const growth = (((currentRevenue - previousRevenue) / previousRevenue) * 100).toFixed(1);
+  const handleDownloadPL = async () => {
+    const el = document.getElementById("pl-card");
+    if (!el) return;
+    const canvas = await html2canvas(el, { scale: 2, backgroundColor: null });
+    const link = document.createElement("a");
+    link.download = `clario-pl-${new Date().toISOString().split("T")[0]}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
 
   return (
-    <DashboardLayout title="Revenue">
-      <div className="max-w-5xl space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-foreground">Revenue</h2>
-            <p className="text-muted-foreground mt-1">Track your revenue growth and forecasts.</p>
+    <div className="max-w-5xl mx-auto">
+      {showPL && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#141414] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+            <div id="pl-card" className="p-8 bg-white dark:bg-[#141414]">
+              <h2 className="text-xl font-bold mb-6 text-center text-[#0A0A0A] dark:text-white">Monthly P&L Snapshot</h2>
+              <div className="space-y-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#6B7280]">Gross Revenue</span>
+                  <span className="font-semibold text-[#0A0A0A] dark:text-white">$12,450.00</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#6B7280]">Cost of Goods / Service</span>
+                  <span className="font-semibold text-[#EF4444]">-$2,100.00</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#6B7280]">Operating Expenses</span>
+                  <span className="font-semibold text-[#EF4444]">-$4,350.00</span>
+                </div>
+                <div className="pt-4 border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] flex justify-between">
+                  <span className="font-bold text-[#0A0A0A] dark:text-white">Net Profit</span>
+                  <span className="font-bold text-[#22C55E]">$6,000.00</span>
+                </div>
+                <div className="flex justify-between text-xs mt-1">
+                  <span className="text-[#6B7280]">Profit Margin</span>
+                  <span className="font-semibold text-[#22C55E]">48.2%</span>
+                </div>
+              </div>
+              <div className="mt-8 text-center text-[10px] text-[#9CA3AF]">Generated by Clario</div>
+            </div>
+            <div className="p-4 bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(255,255,255,0.02)] flex gap-3 border-t border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
+              <button onClick={() => setShowPL(false)} className="flex-1 h-10 rounded-xl border font-semibold text-sm">Cancel</button>
+              <button onClick={handleDownloadPL} className="flex-1 h-10 rounded-xl bg-[#0A0A0A] dark:bg-white text-white dark:text-black font-semibold text-sm flex items-center justify-center gap-2">
+                <Download size={14} /> Download PNG
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-muted">
-            {(["7d", "30d", "90d"] as const).map((p) => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  period === p
-                    ? "bg-primary text-white shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {p}
+        </div>
+      )}
+
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold text-[#0A0A0A] dark:text-white">Revenue</h1>
+        <button onClick={() => setShowPL(true)} className="h-9 px-4 rounded-xl border border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.1)] hover:bg-[rgba(0,0,0,0.03)] dark:hover:bg-[rgba(255,255,255,0.03)] font-medium flex items-center gap-2 transition-colors text-sm">
+          <Download size={16} /> Generate P&L Card
+        </button>
+      </div>
+
+      <div className="glass-card p-6 mb-6">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h3 className="text-sm font-semibold text-[#0A0A0A] dark:text-white mb-1">Revenue Growth</h3>
+            <p className="text-3xl font-bold text-[#0A0A0A] dark:text-white">${(businessProfile?.mrr || 12450).toLocaleString()}</p>
+          </div>
+          <div className="flex gap-2">
+            {["7D", "30D", "90D"].map((tab, i) => (
+              <button key={tab} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${i===1 ? "bg-[#0A0A0A] dark:bg-white text-white dark:text-black" : "bg-[rgba(0,0,0,0.04)] dark:bg-[rgba(255,255,255,0.04)] text-[#6B7280]"}`}>
+                {tab}
               </button>
             ))}
           </div>
         </div>
-
-        {/* Revenue Growth Chart */}
-        <div className="glass-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-semibold text-foreground">Revenue Growth</p>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-primary rounded-full inline-block" /> Actual</span>
-              <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-primary rounded-full inline-block border-dashed" style={{ borderTop: "2px dashed #F97316", height: 0 }} /> Projected</span>
-            </div>
-          </div>
-          <RevenueChart data={currentData} />
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="glass-card p-5">
-            <p className="text-xs text-muted-foreground">Current MRR</p>
-            <p className="text-2xl font-bold text-foreground mt-1">${(currentRevenue).toLocaleString()}</p>
-            <p className={`text-xs font-semibold mt-1 ${Number(growth) >= 0 ? "text-[#22C55E]" : "text-[#EF4444]"}`}>
-              {Number(growth) >= 0 ? "+" : ""}{growth}%
-            </p>
-          </div>
-          <div className="glass-card p-5">
-            <p className="text-xs text-muted-foreground">Annual Run Rate</p>
-            <p className="text-2xl font-bold text-foreground mt-1">${(currentRevenue * 12).toLocaleString()}</p>
-          </div>
-          <div className="glass-card p-5">
-            <p className="text-xs text-muted-foreground">Cash Runway</p>
-            <p className="text-2xl font-bold text-foreground mt-1">14 months</p>
-            <p className="text-xs text-muted-foreground mt-1">At current burn rate</p>
-          </div>
-        </div>
-
-        {/* Axo Insight */}
-        <div className="glass-card p-5" style={{ borderLeft: "3px solid #F97316" }}>
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="text-xs font-bold text-primary">A</span>
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Axo Insight</p>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                Your revenue grew {growth}% this period. If you maintain this trajectory, you&apos;ll hit $15,000 MRR within 3 months. Focus on reducing client churn to accelerate growth.
-              </p>
-            </div>
-          </div>
+        <div className="h-72 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={metrics}>
+              <Line type="monotone" dataKey="mrr" stroke="#F97316" strokeWidth={2} dot={false} fill="rgba(249,115,22,0.06)" />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
-    </DashboardLayout>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="glass-card p-6">
+          <h3 className="text-sm font-semibold text-[#0A0A0A] dark:text-white mb-4">Cash Runway</h3>
+          <div className="flex items-end gap-2 mb-4">
+            <span className="text-4xl font-bold text-[#0A0A0A] dark:text-white">14.2</span>
+            <span className="text-[#9CA3AF] mb-1">months</span>
+          </div>
+          <div className="w-full h-2 bg-[rgba(0,0,0,0.06)] dark:bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
+            <div className="h-full bg-[#22C55E]" style={{ width: "70%" }} />
+          </div>
+        </div>
+
+        {businessType === "agency" ? (
+          <div className="glass-card p-6">
+            <h3 className="text-sm font-semibold text-[#0A0A0A] dark:text-white mb-4">Client Concentration</h3>
+            <div className="flex items-end gap-2 mb-4">
+              <span className="text-4xl font-bold text-[#F59E0B]">15%</span>
+              <span className="text-[#9CA3AF] mb-1">top client</span>
+            </div>
+            <p className="text-[13px] text-[#6B7280]">Your largest client accounts for 15% of your total MRR. This is a moderate risk factor.</p>
+          </div>
+        ) : (
+          <div className="glass-card p-6">
+            <h3 className="text-sm font-semibold text-[#0A0A0A] dark:text-white mb-4">Average Order Value (AOV)</h3>
+            <div className="flex items-end gap-2 mb-4">
+              <span className="text-4xl font-bold text-[#22C55E]">$85</span>
+              <span className="text-[#9CA3AF] mb-1">/ order</span>
+            </div>
+            <p className="text-[13px] text-[#6B7280]">AOV is up 4% this month, largely driven by the new cross-sell post-purchase flow.</p>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-6 glass-card p-4 border-l-[2px] border-l-[rgba(249,115,22,0.4)] flex gap-3 items-start">
+        <div className="w-2 h-2 rounded-full bg-[#6B7280] mt-1.5 shrink-0" />
+        <div>
+          <p className="text-sm font-semibold text-[#0A0A0A] dark:text-white mb-1">Axo Insight</p>
+          <p className="text-[13px] text-[#6B7280]">Based on your current trajectory, you are on pace to hit your 90-day goal 12 days early. The primary constraint right now is fulfillment capacity, not revenue generation.</p>
+        </div>
+      </div>
+    </div>
   );
 }

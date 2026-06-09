@@ -15,12 +15,9 @@ const basePath = "/clario-app";
 function ClarioIcon({ size = 32 }: { size?: number }) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-
   useEffect(() => setMounted(true), []);
 
-  if (!mounted) {
-    return <div style={{ width: size, height: size }} />;
-  }
+  if (!mounted) return <div style={{ width: size, height: size }} />;
 
   const src = resolvedTheme === "dark"
     ? `${basePath}/logo-dark.jpeg`
@@ -33,32 +30,14 @@ function ClarioIcon({ size = 32 }: { size?: number }) {
       alt="Clario"
       width={size}
       height={size}
-      style={{
-        width: size,
-        height: size,
-        objectFit: "contain",
-        borderRadius: "6px",
-      }}
+      style={{ width: size, height: size, objectFit: "contain", borderRadius: 6 }}
     />
   );
 }
 
-export function ClarioLogo({
-  size = "md",
-  linked = true,
-  showText = true,
-}: ClarioLogoProps) {
-  const iconSizes = {
-    sm: 24,
-    md: 32,
-    lg: 40,
-  };
-
-  const textSizes = {
-    sm: "text-lg",
-    md: "text-[22px]",
-    lg: "text-2xl",
-  };
+export function ClarioLogo({ size = "md", linked = true, showText = true }: ClarioLogoProps) {
+  const iconSizes = { sm: 24, md: 28, lg: 40 };
+  const textSizes = { sm: "text-lg", md: "text-[22px]", lg: "text-2xl" };
 
   const content = (
     <div className="flex items-center gap-[10px]">
@@ -76,10 +55,7 @@ export function ClarioLogo({
 
   if (linked) {
     return (
-      <Link
-        href="/dashboard"
-        className="flex items-center no-underline hover:opacity-90 transition-opacity duration-150"
-      >
+      <Link href="/dashboard" className="flex items-center no-underline hover:opacity-90 transition-opacity duration-150">
         {content}
       </Link>
     );

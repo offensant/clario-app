@@ -1,63 +1,58 @@
 "use client";
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
+
 import Link from "next/link";
-import { ChevronLeft, CheckCircle, Download } from "lucide-react";
+import { ChevronLeft, CheckCircle2 } from "lucide-react";
 
-export default function BillingPage() {
+export default function BillingSettings() {
   return (
-    <DashboardLayout title="Billing">
-      <div className="max-w-2xl space-y-6">
-        <Link href="/dashboard/settings" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ChevronLeft size={16} /> Settings
-        </Link>
-        <div>
-          <h2 className="text-2xl font-semibold text-foreground">Billing</h2>
-          <p className="text-muted-foreground mt-1">Manage your plan and payment details.</p>
-        </div>
+    <div className="max-w-3xl mx-auto">
+      <Link href="/dashboard/settings" className="flex items-center gap-2 text-[#6B7280] hover:text-[#0A0A0A] dark:hover:text-white transition-colors mb-6 w-fit">
+        <ChevronLeft size={16} /> Settings
+      </Link>
 
-        {/* Current plan */}
-        <div className="glass-card p-6 flex items-center justify-between" style={{ borderLeft: "3px solid #F97316" }}>
-          <div>
-            <p className="text-lg font-bold text-foreground">Free Plan</p>
-            <p className="text-2xl font-bold text-primary mt-1">$0<span className="text-sm font-normal text-muted-foreground">/month</span></p>
-            <p className="text-xs text-muted-foreground mt-1">No renewal — upgrade anytime</p>
-          </div>
-          <button className="px-5 py-2.5 bg-primary hover:bg-[#EA6C00] text-white text-sm font-medium rounded-xl transition-colors">Upgrade</button>
-        </div>
+      <h1 className="text-2xl font-semibold text-[#0A0A0A] dark:text-white mb-8">Billing & Plan</h1>
 
-        {/* Features */}
-        <div className="glass-card overflow-hidden">
-          <p className="px-5 pt-5 pb-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Included in your plan</p>
-          {["3 connected integrations", "Daily Axo action", "Basic strategic scores", "Email support", "1 workspace"].map((f, i, arr) => (
-            <div key={f} className={`flex items-center gap-3 px-5 py-3 ${i < arr.length - 1 ? "border-b border-border/50" : ""}`}>
-              <CheckCircle size={16} className="text-[#22C55E] shrink-0" />
-              <span className="text-sm text-foreground">{f}</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="glass-card p-6 border-l-[3px] border-l-[rgba(249,115,22,0.4)] flex flex-col h-full">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-[#0A0A0A] dark:text-white mb-1">Free Plan</h3>
+            <div className="flex items-end gap-1">
+              <span className="text-3xl font-bold text-[#0A0A0A] dark:text-white">$0</span>
+              <span className="text-[#6B7280] mb-1">/mo</span>
             </div>
-          ))}
+          </div>
+          <p className="text-[13px] text-[#6B7280] mb-8">You are currently on the free beta plan. Limited to 1 workspace and basic integrations.</p>
+          <button className="w-full h-10 mt-auto rounded-xl bg-[#F97316] hover:bg-[#EA6C00] text-white font-semibold transition-all">
+            Upgrade to Pro
+          </button>
         </div>
 
-        {/* Billing history */}
-        <div className="glass-card overflow-hidden">
-          <p className="px-5 pt-5 pb-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Billing History</p>
-          <div className="px-5 py-2.5 flex items-center text-[11px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/50">
-            <span className="flex-1">Date</span>
-            <span className="w-24 text-right">Amount</span>
-            <span className="w-20 text-center">Status</span>
-            <span className="w-12" />
-          </div>
-          {[
-            { date: "May 1, 2026", amount: "$0.00", status: "Paid" },
-            { date: "Apr 1, 2026", amount: "$0.00", status: "Paid" },
-          ].map((row, i, arr) => (
-            <div key={row.date} className={`px-5 py-3 flex items-center ${i < arr.length - 1 ? "border-b border-border/50" : ""}`}>
-              <span className="flex-1 text-sm text-foreground">{row.date}</span>
-              <span className="w-24 text-right text-sm text-foreground">{row.amount}</span>
-              <span className="w-20 text-center"><span className="text-[11px] font-medium text-[#22C55E] bg-[rgba(34,197,94,0.12)] px-2 py-0.5 rounded-full">{row.status}</span></span>
-              <span className="w-12 flex justify-end"><button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-accent transition-colors"><Download size={13} className="text-muted-foreground" /></button></span>
-            </div>
-          ))}
+        <div className="glass-card p-6 flex flex-col justify-center">
+          <h3 className="text-sm font-semibold text-[#0A0A0A] dark:text-white mb-4">Pro Features</h3>
+          <ul className="space-y-3">
+            {[
+              "Unlimited workspaces",
+              "Advanced custom integrations",
+              "Priority Axo response engine",
+              "Custom P&L exports",
+              "Role-based access control"
+            ].map(f => (
+              <li key={f} className="flex items-center gap-2 text-[13px] text-[#374151] dark:text-[#D1D5DB]">
+                <CheckCircle2 size={16} className="text-[#22C55E]" /> {f}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
-    </DashboardLayout>
+
+      <div className="glass-card overflow-hidden">
+        <div className="p-4 border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
+          <h3 className="text-sm font-semibold text-[#0A0A0A] dark:text-white">Billing History</h3>
+        </div>
+        <div className="p-8 text-center text-[#9CA3AF] text-sm">
+          No invoices found. You are on the free plan.
+        </div>
+      </div>
+    </div>
   );
 }

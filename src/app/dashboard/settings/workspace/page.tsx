@@ -1,87 +1,76 @@
 "use client";
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import Link from "next/link";
-import { ChevronLeft, ChevronRight, Lock, Trash2 } from "lucide-react";
-import { useState } from "react";
 
-export default function WorkspacePage() {
-  const [showDelete, setShowDelete] = useState(false);
-  const [confirmName, setConfirmName] = useState("");
+import Link from "next/link";
+import { ChevronLeft, Lock } from "lucide-react";
+import { useLanguage } from "@/lib/language";
+import { useWorkspace } from "@/context/WorkspaceContext";
+
+export default function WorkspaceSettings() {
+  const { lang, setLang, t } = useLanguage();
+  const { workspace, businessProfile } = useWorkspace();
 
   return (
-    <DashboardLayout title="Workspace">
-      <div className="max-w-2xl space-y-6">
-        <Link href="/dashboard/settings" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ChevronLeft size={16} /> Settings
-        </Link>
-        <h2 className="text-2xl font-semibold text-foreground">Workspace</h2>
+    <div className="max-w-3xl mx-auto">
+      <Link href="/dashboard/settings" className="flex items-center gap-2 text-[#6B7280] hover:text-[#0A0A0A] dark:hover:text-white transition-colors mb-6 w-fit">
+        <ChevronLeft size={16} /> {t("nav.settings")}
+      </Link>
 
-        {/* General */}
-        <div className="glass-card overflow-hidden">
-          <p className="px-5 pt-5 pb-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">General</p>
-          {[
-            { label: "Workspace name", value: "Clario HQ", editable: true },
-            { label: "Owner", value: "thomas@clario.co", editable: false },
-            { label: "Language", value: "EN", editable: true },
-          ].map((row, i, arr) => (
-            <div key={row.label} className={`flex items-center justify-between px-5 py-3.5 hover:bg-[rgba(249,115,22,0.04)] transition-colors ${row.editable ? "cursor-pointer" : ""} ${i < arr.length - 1 ? "border-b border-border/50" : ""}`}>
-              <span className="text-sm text-foreground">{row.label}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">{row.value}</span>
-                {row.editable && <ChevronRight size={14} className="text-muted-foreground" />}
-              </div>
-            </div>
-          ))}
-        </div>
+      <h1 className="text-2xl font-semibold text-[#0A0A0A] dark:text-white mb-8">{t("settings.workspace")}</h1>
 
-        {/* Strategic Profile */}
+      <div className="space-y-6">
         <div className="glass-card overflow-hidden">
-          <p className="px-5 pt-5 pb-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Strategic Profile</p>
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/50">
-            <span className="text-sm text-foreground">Business type</span>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Agency</span>
-              <Lock size={12} className="text-primary" />
-              <span className="text-[11px] text-primary">Cannot be changed</span>
-            </div>
+          <div className="p-4 border-b border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]">
+            <label className="text-xs text-[#9CA3AF] uppercase tracking-wider font-semibold block mb-1">Workspace Name</label>
+            <p className="text-[15px] font-medium text-[#0A0A0A] dark:text-white">{workspace?.name || "..."}</p>
           </div>
-          <div className="flex items-center justify-between px-5 py-3.5 hover:bg-[rgba(249,115,22,0.04)] transition-colors cursor-pointer">
-            <span className="text-sm text-foreground">Main services</span>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Web Dev, Branding, SEO</span>
-              <ChevronRight size={14} className="text-muted-foreground" />
-            </div>
+          <div className="p-4">
+            <label className="text-xs text-[#9CA3AF] uppercase tracking-wider font-semibold block mb-1">Workspace ID</label>
+            <p className="text-[13px] font-mono text-[#6B7280]">{workspace?.id || "..."}</p>
           </div>
         </div>
 
-        {/* Danger Zone */}
-        <div className="glass-card overflow-hidden" style={{ border: "1px solid rgba(239,68,68,0.2)" }}>
-          <p className="px-5 pt-5 pb-3 text-[11px] font-semibold text-destructive uppercase tracking-wider">Danger Zone</p>
-          <button onClick={() => setShowDelete(true)} className="flex items-center gap-3 w-full px-5 py-3.5 hover:bg-destructive/5 transition-colors">
-            <Trash2 size={16} className="text-destructive" />
-            <div className="text-left">
-              <p className="text-sm font-medium text-destructive">Delete workspace</p>
-              <p className="text-xs text-muted-foreground">This action cannot be undone.</p>
-            </div>
-            <ChevronRight size={14} className="text-muted-foreground ml-auto" />
+        {/* Language Section - The ONLY place to change language */}
+        <div className="glass-card p-6">
+          <h3 className="text-[11px] uppercase tracking-widest text-[#9CA3AF] font-semibold mb-4">LANGUAGE / LANGUE</h3>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setLang("EN")}
+              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                lang === "EN" ? "bg-[#0A0A0A] dark:bg-white text-white dark:text-black shadow-md" : "bg-[rgba(0,0,0,0.04)] dark:bg-[rgba(255,255,255,0.04)] text-[#6B7280] hover:bg-[rgba(0,0,0,0.08)] dark:hover:bg-[rgba(255,255,255,0.08)]"
+              }`}
+            >
+              English
+            </button>
+            <button
+              onClick={() => setLang("FR")}
+              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                lang === "FR" ? "bg-[#0A0A0A] dark:bg-white text-white dark:text-black shadow-md" : "bg-[rgba(0,0,0,0.04)] dark:bg-[rgba(255,255,255,0.04)] text-[#6B7280] hover:bg-[rgba(0,0,0,0.08)] dark:hover:bg-[rgba(255,255,255,0.08)]"
+              }`}
+            >
+              Français
+            </button>
+          </div>
+        </div>
+
+        <div className="glass-card p-6">
+          <h3 className="text-sm font-semibold text-[#0A0A0A] dark:text-white mb-2">Strategic Profile</h3>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="capitalize font-medium text-[#374151] dark:text-[#D1D5DB]">{businessProfile?.business_type || "..."}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[#9CA3AF]">
+            <Lock size={12} />
+            <span className="text-xs">Cannot be changed after setup.</span>
+          </div>
+        </div>
+
+        <div className="glass-card p-6 border-red-500/20">
+          <h3 className="text-sm font-semibold text-[#EF4444] mb-2">Danger Zone</h3>
+          <p className="text-sm text-[#6B7280] mb-4">Permanently delete this workspace and all associated data.</p>
+          <button className="h-9 px-4 rounded-lg border border-[#EF4444]/30 text-[#EF4444] hover:bg-[#EF4444]/5 text-sm font-medium transition-colors">
+            Delete workspace
           </button>
         </div>
-
-        {/* Delete modal */}
-        {showDelete && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowDelete(false)}>
-            <div className="glass-card p-8 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-              <h3 className="text-lg font-semibold text-destructive">Delete workspace?</h3>
-              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">Type the workspace name to confirm. This will permanently delete all your data, scores, and history.</p>
-              <input value={confirmName} onChange={(e) => setConfirmName(e.target.value)} placeholder="Clario HQ" className="w-full h-11 px-4 mt-4 rounded-xl bg-background border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-destructive/30" />
-              <div className="flex gap-3 mt-6">
-                <button onClick={() => setShowDelete(false)} className="flex-1 h-11 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-accent transition-colors">Cancel</button>
-                <button disabled={confirmName !== "Clario HQ"} className="flex-1 h-11 rounded-xl bg-destructive hover:bg-destructive/90 text-white text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed">Delete permanently</button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-    </DashboardLayout>
+    </div>
   );
 }
